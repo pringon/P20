@@ -3,245 +3,120 @@
 ComInterface::ComInterface(QWidget *parent) {
 
   wiringPiSetup();
-  pinMode(0, OUTPUT);
-  pinMode(1, OUTPUT);
-  pinMode(2, INPUT);
-  pinMode(3, INPUT);
-  pinMode(4, OUTPUT);
-  /*pinMode(5, OUTPUT);
-  pinMode(6, OUTPUT);
+  pinMode(0, INPUT);
+  pinMode(1, INPUT);
+  pinMode(4, INPUT);
+  pinMode(6, INPUT);
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(5, OUTPUT);
   pinMode(7, OUTPUT);
-  pinMode(8, OUTPUT);
-  pinMode(9, OUTPUT);
-  pinMode(10, OUTPUT);
-  pinMode(11, OUTPUT);*/
-  pinMode(12, INPUT);
-	/*pinMode(13, INPUT);
-	pinMode(14, INPUT);
-	pinMode(15, INPUT);
-	pinMode(16, INPUT);
-	pinMode(21, INPUT);
-	pinMode(22, INPUT);
-	pinMode(23, INPUT);*/
-  digitalWrite(0, HIGH);
-  digitalWrite(1, HIGH);
+  pullUpDnControl(2, PUD_UP);
+  pullUpDnControl(3, PUD_UP);
+  pullUpDnControl(5, PUD_UP);
+  pullUpDnControl(7, PUD_UP);
+
+  digitalWrite(CONNECT_OUT, HIGH);
+  while(digitalRead(CONNECT_IN));
 
   connect(&send, &EmitterBoard::paintLine,
-          this, &ComInterface::postLine);
-  /*QObject::connect(this, &ComInterface::lineReceived,
-          receive, &ReceiverBoard::lineReceived);*/
+          this,  &ComInterface::add_to_queue);
 
   pthread_create(&send_thread, NULL, &ComInterface::sendHandler_wrapper, this);
+  pthread_create(&receive_thread, NULL, &ComInterface::receiveHandler_wrapper, this);
+
+  send_queue = (queue*) malloc(sizeof(queue));
+  send_queue->next = 0;
+  current_element->next = send_queue;
 
   send.show();
   receive.show();
 }
 
-void ComInterface::receiveHandler(void *thread_args) {
+void ComInterface::add_to_queue(QPoint start_point, QPoint end_point) {
 
-  while(1) {
+  send_queue->start = start_point;
+  send_queue->end   = end_point;
+  send_queue->next = (queue*) malloc(sizeof(queue));
+  send_queue->prev = send_queue;
+  send_queue = send_queue->next;
+  send_queue->next = 0;
+}
 
-    while(digitalRead(2));
+void ComInterface::send_integer(int int_to_send) {
 
-    ComInterface::receiveLine();
+  std::bitset<32> bits_to_send(int_to_send);
+  for(int i = 0; i < 32; i++) {
+
+    digitalWrite(DATA_OUT, bits_to_send[i]);
+    digitalWrite(TX_OUT, LOW);
+    delay(100);
+    while(digitalRead(RX_IN));
+    digitalWrite(TX_OUT, HIGH);
   }
+}
+
+int ComInterface::receive_integer() {
+
+  std::bitset<32> bits_to_receive;
+  for(int i = 0; i < 32; i++) {
+
+    bits_to_receive[i] = digitalRead(DATA_IN);
+    digitalWrite(RX_OUT, LOW);
+    delay(100);
+    while(digitalRead(TX_IN));
+    digitalWrite(RX_OUT, HIGH);
+  }
+
+  int int_to_send = (int)(bits_to_send.to_ulong());
+  std::cout<<int_to_send;
+  return int_to_send;
+}
+
+void ComInterface::send_line() {
+
+  send_integer(current_element->start.rx());
+  send_integer(current_element->start.ry());
+  send_integer(current_element->end.rx());
+  send_integer(current_element->end.ry());
+
+  current_element = current_element->next;
+  free(current_element->prev);
+}
+
+void ComInterface::receive_line() {
+
+  int x, y;
+
+  x = receive_integer();
+  y = receive_integer();
+  QPoint start(x, y);
+
+  x = receive_integer();
+  y = receive_integer();
+  QPoint end(x, y);
+
+  receive.lineReceived(start, end);
 }
 
 void ComInterface::sendHandler(void *thread_args) {
 
   while(1) {
 
-    while(post_queue.size() == 0);
+    while(send_queue->next == 0);
 
-    ComInterface::sendLine();
+    send_line();
   }
 }
 
-void receiveLine() {
+void ComInterface::receiveHandler(void *thread_args) {
 
-  int x, y;
+  while(1) {
 
-  x = receiveInteger();
-  y = receiveInteger();
-  QPoint start(x, y);
-  x = receiveInteger();
-  y = receiveInteger();
-  QPoint end(x, y);
+    while(digitalRead(TX_IN));
 
-  receiver.lineReceived(start, end);
-}
-
-void ComInterface::sendLine() {
-
-  std::pair<QPoint, QPoint> line_to_send = post_queue.back();
-  post_queue.pop_back();
-
-  if(line_to_send->first.rx() == 0) {
-    return;
+    receive_line();
   }
-
-  //std::bitset<32> b(line_to_send->first.rx());
-
-  digitalWrite(0, LOW);
-  delay(1);
-  digitalWrite(0, HIGH);
-
-  sendInteger(line_to_send->first.rx());
-  sendInteger(line_to_send->first.ry());
-  sendInteger(line_to_send->second.rx());
-  sendInteger(line_to_send->second.ry());
-  /*for(int i = 0; i < 4; i++) {
-    digitalWrite(4, b[i]);
-    digitalWrite(5, b[i+1]);
-    digitalWrite(6, b[i+2]);
-    digitalWrite(7, b[i+3]);
-    digitalWrite(8, b[i+4]);
-    digitalWrite(9, b[i+5]);
-    digitalWrite(10, b[i+6]);
-    digitalWrite(11, b[i+7]);
-
-    delay(1);
-    digitalWrite(0, LOW);
-    delay(1);
-
-    while(digitalRead(3));
-    digitalWrite(0, HIGH);
-  }
-  digitalWrite(0, HIGH);
-
-  b = std::bitset<32>(line_to_send->first.ry());
-  for(int i = 0; i < 4; i++) {
-    digitalWrite(4, b[i]);
-    digitalWrite(5, b[i+1]);
-    digitalWrite(6, b[i+2]);
-    digitalWrite(7, b[i+3]);
-    digitalWrite(8, b[i+4]);
-    digitalWrite(9, b[i+5]);
-    digitalWrite(10, b[i+6]);
-    digitalWrite(11, b[i+7]);
-
-    delay(1);
-    digitalWrite(0, LOW);
-    delay(1);
-
-    while(digitalRead(3));
-    digitalWrite(0, HIGH);
-  }
-  digitalWrite(0, HIGH);
-
-  b = std::bitset<32>(line_to_send->second.rx());
-  for(int i = 0; i < 4; i++) {
-    digitalWrite(4, b[i]);
-    digitalWrite(5, b[i+1]);
-    digitalWrite(6, b[i+2]);
-    digitalWrite(7, b[i+3]);
-    digitalWrite(8, b[i+4]);
-    digitalWrite(9, b[i+5]);
-    digitalWrite(10, b[i+6]);
-    digitalWrite(11, b[i+7]);
-
-    delay(1);
-    digitalWrite(0, LOW);
-    delay(1);
-
-    while(digitalRead(3));
-    digitalWrite(0, HIGH);
-  }
-  digitalWrite(0, HIGH);
-
-  b = std::bitset<32>(line_to_send->second.ry());
-  for(int i = 0; i < 4; i++) {
-    digitalWrite(4, b[i]);
-    digitalWrite(5, b[i+1]);
-    digitalWrite(6, b[i+2]);
-    digitalWrite(7, b[i+3]);
-    digitalWrite(8, b[i+4]);
-    digitalWrite(9, b[i+5]);
-    digitalWrite(10, b[i+6]);
-    digitalWrite(11, b[i+7]);
-
-    delay(1);
-    digitalWrite(0, LOW);
-    delay(1);
-
-    while(digitalRead(3));
-    digitalWrite(0, HIGH);
-  }
-  digitalWrite(0, HIGH);
-  */
-  //emit ComInterface::lineReceived(line_to_send->first, line_to_send->second);
-
-  //post_queue.pop_back();
-}
-
-void ComInterface::postLine(QPoint start, QPoint end) {
-  post_queue.insert(post_queue.begin(),
-                  std::make_pair(start, end));
-
-  //cand e this sender cheama functia de aici, altfel seteaza sa fie chemata aia static(adica fara obiect, uitete in documentatie pentru qconnect).
-  //mersi
-}
-
-void sendInteger(int int_to_send) {
-
-  std::bitset<32> bits_to_send(int_to_send);
-  for(int i = 0; i < 32; i++) {
-
-    digitalWrite(4, bits_to_send[i]);
-    std::cout<<bits_to_send[i]);
-    /*digitalWrite(5, bits_to_send[i+1]);
-    std::cout<<bits_to_send[i+1]);
-    digitalWrite(6, bits_to_send[i+2]);
-    std::cout<<bits_to_send[i+2]);
-    digitalWrite(7, bits_to_send[i+3]);
-    std::cout<<bits_to_send[i+3]);
-    digitalWrite(8, bits_to_send[i+4]);
-    std::cout<<bits_to_send[i+4]);
-    digitalWrite(9, bits_to_send[i+5]);
-    std::cout<<bits_to_send[i+5]);
-    digitalWrite(10, bits_to_send[i+6]);
-    std::cout<<bits_to_send[i+6]);
-    digitalWrite(11, bits_to_send[i+7]);
-    std::cout<<bits_to_send[i+7])<<std::endl;*/
-
-    delay(1);
-    digitalWrite(0, LOW);
-    delay(1);
-    while(digitalRead(3));
-    digitalWrite(0, HIGH);
-  }
-}
-
-int receiveInteger() {
-
-  std::bitset<32> bits_to_receive;
-  for(int i = 0; i < 32; i++) {
-
-    bits_to_receive[i] = digitalRead(12);
-    std::cout<<bits_to_send[i];
-    /*bits_to_receive[i+1] = digitalRead(13);
-    std::cout<<bits_to_send[i+1];
-    bits_to_receive[i+2] = digitalRead(14);
-    std::cout<<bits_to_send[i+2];
-    bits_to_receive[i+3] = digitalRead(15);
-    std::cout<<bits_to_send[i+3];
-    bits_to_receive[i+4] = digitalRead(16);
-    std::cout<<bits_to_send[i+4];
-    bits_to_receive[i+5] = digitalRead(21);
-    std::cout<<bits_to_send[i+5];
-    bits_to_receive[i+6] = digitalRead(22);
-    std::cout<<bits_to_send[i+6];
-    bits_to_receive[i+7] = digitalRead(23);
-    std::cout<<bits_to_send[i+7]<<std::endl;*/
-
-    delay(1);
-    digitalWrite(1, LOW);
-    delay(1);
-    while(digitalRead(2));
-    digitalWrite(1, HIGH);
-  }
-
-  return (int)(b.to_ulong());
 }
 
 void *ComInterface::sendHandler_wrapper(void *object) {

@@ -1,6 +1,7 @@
 #ifndef COM_INTERFACE_H
 #define COM_INTERFACE_H
 
+#include <stdlib.h>
 #include <bitset>
 #include <utility>
 #include <vector>
@@ -9,6 +10,7 @@
 #include <QObject>
 #include "emitter_board.h"
 #include "receiver_board.h"
+#include "queue.h"
 
 class ComInterface : public QObject{
   Q_OBJECT
@@ -18,15 +20,19 @@ public:
   static void* receiveHandler_wrapper(void *);
 
 private:
-  std::vector<std::pair<QPoint, QPoint>> post_queue;
   pthread_t send_thread;
+  pthread_t receive_thread;
+  queue *send_queue;
+  queue *current_element;
   EmitterBoard send;
   ReceiverBoard receive;
+  ENUM PINS { RX_IN, TX_IN, RX_OUT, TX_OUT DATA_IN, DATA_OUT, CONNECT_IN, CONNECT_OUT };
 
-  void sendInteger(int);
-  int receiveInteger();
-  void sendLine();
-  void receiveLine();
+  void add_to_queue(QPoint, QPoint);
+  void send_integer(int);
+  int  receive_integer();
+  void send_line();
+  void receive_line();
   void sendHandler(void *);
   void receiveHandler(void *);
 
