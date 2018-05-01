@@ -58,7 +58,6 @@ void EmitterBoard::closeEvent(QCloseEvent *event) {
 
 void EmitterBoard::paintEvent(QPaintEvent *event) {
 
-  std::cout<<this->start_point.rx()<<' '<<this->start_point.ry()<<'\n';
   QPainter painter(this);
   painter.drawImage(0, 0, *image);
   painter.end();

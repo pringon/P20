@@ -55,19 +55,19 @@ void ComInterface::send_integer(int int_to_send) {
   for(int i = 0; i < 32; i++) {
 
     digitalWrite(DATA_OUT, bits_to_send[i]);
-    delay(5);
+    delay(10);
     digitalWrite(TX_OUT, LOW);
 
     while(digitalRead(RX_IN));
     digitalWrite(TX_OUT, HIGH);
   }
-  std::cout<<"Data sent!";
+  std::cout<<" Data sent!"<<'\n';
 }
 
 int ComInterface::receive_integer() {
 
   std::bitset<32> bits_to_receive;
-  std::cout<<"Primesc";
+  std::cout<<"Primesc ";
   for(int i = 0; i < 32; i++) {
 
     while(digitalRead(TX_IN));
@@ -79,25 +79,23 @@ int ComInterface::receive_integer() {
   }
 
   int int_to_receive = (int)(bits_to_receive.to_ulong());
-  std::cout<<int_to_receive;
+  std::cout<<int_to_receive<<'\n';
   return int_to_receive;
 }
 
 void ComInterface::send_line() {
 
-  std::cout<<'1';
-
-  if(current_element->start.rx() != 0) {
+  if(current_element->start.rx() != 0
+  && (current_element->start.rx() != current_element->next->start.ry()
+  || current_element->start.ry() != current_element->next->start.ry())) {
     send_integer(current_element->start.rx());
     send_integer(current_element->start.ry());
     send_integer(current_element->end.rx());
     send_integer(current_element->end.ry());
   }
-  std::cout<<'1';
+
   current_element = current_element->next;
-  std::cout<<'2';
   free(current_element->prev);
-  std::cout<<"S-A TRIMIS!";
 }
 
 void ComInterface::receive_line() {
@@ -107,12 +105,10 @@ void ComInterface::receive_line() {
   x = receive_integer();
   y = receive_integer();
   QPoint start(x, y);
-  std::cout<<std::endl;
 
   x = receive_integer();
   y = receive_integer();
   QPoint end(x, y);
-  std::cout<<std::endl;
 
   receive.lineReceived(start, end);
 }
