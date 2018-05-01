@@ -55,6 +55,7 @@ void ComInterface::send_integer(int int_to_send) {
   for(int i = 0; i < 32; i++) {
 
     digitalWrite(DATA_OUT, bits_to_send[i]);
+    delay(5);
     digitalWrite(TX_OUT, LOW);
 
     while(digitalRead(RX_IN));
@@ -69,10 +70,11 @@ int ComInterface::receive_integer() {
   std::cout<<"Primesc";
   for(int i = 0; i < 32; i++) {
 
-    bits_to_receive[i] = digitalRead(DATA_IN);
-
-    digitalWrite(RX_OUT, LOW);
     while(digitalRead(TX_IN));
+
+    bits_to_receive[i] = digitalRead(DATA_IN);
+    digitalWrite(RX_OUT, LOW);
+    delay(5);
     digitalWrite(RX_OUT, HIGH);
   }
 
@@ -130,8 +132,6 @@ void ComInterface::sendHandler(void *thread_args) {
 void ComInterface::receiveHandler(void *thread_args) {
 
   while(1) {
-
-    while(digitalRead(TX_IN));
 
     receive_line();
   }
