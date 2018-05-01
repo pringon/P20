@@ -26,9 +26,8 @@ private:
   queue *current_element;
   EmitterBoard send;
   ReceiverBoard receive;
-  ENUM PINS { RX_IN, TX_IN, RX_OUT, TX_OUT DATA_IN, DATA_OUT, CONNECT_IN, CONNECT_OUT };
+  enum PINS { RX_IN, TX_IN, RX_OUT, TX_OUT, DATA_IN, DATA_OUT, CONNECT_IN, CONNECT_OUT };
 
-  void add_to_queue(QPoint, QPoint);
   void send_integer(int);
   int  receive_integer();
   void send_line();
@@ -37,7 +36,7 @@ private:
   void receiveHandler(void *);
 
 protected slots:
-  void postLine(QPoint, QPoint);
+  void add_to_queue(QPoint, QPoint);
 };
 
 #endif

@@ -3,11 +3,11 @@
 
 #include <QPoint>
 
-typedef struct {
+typedef struct queue_struct {
   QPoint start;
   QPoint end;
-  queue *next;
-  queue *prev;
+  struct queue_struct *next;
+  struct queue_struct *prev;
 } queue;
 
 #endif

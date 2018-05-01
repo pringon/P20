@@ -12,6 +12,7 @@
 #include <QPen>
 #include <QImage>
 #include <QPainter>
+#include <wiringPi.h>
 
 class EmitterBoard : public QWidget {
   Q_OBJECT

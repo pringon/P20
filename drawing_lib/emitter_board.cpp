@@ -52,6 +52,7 @@ void EmitterBoard::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 void EmitterBoard::closeEvent(QCloseEvent *event) {
+  digitalWrite(7, HIGH);
   QApplication::quit();
 }
 
