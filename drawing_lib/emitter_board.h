@@ -31,6 +31,7 @@ protected slots:
   virtual void mouseReleaseEvent(QMouseEvent *);
   virtual void closeEvent(QCloseEvent *);
   virtual void paintEvent(QPaintEvent *);
+  //virtual void clearEvent();
 
 signals:
   void paintLine(QPoint, QPoint);

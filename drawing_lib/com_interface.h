@@ -36,6 +36,7 @@ private:
   void receiveHandler(void *);
 
 protected slots:
+  void clear_screen();
   void add_to_queue(QPoint, QPoint);
 };
 

@@ -22,9 +22,9 @@ ComInterface::ComInterface(QWidget *parent) {
   digitalWrite(TX_OUT, HIGH);
   digitalWrite(RX_OUT, HIGH);
 
-  digitalWrite(CONNECT_OUT, LOW);
-  while(digitalRead(CONNECT_IN));
 
+  /*connect(this,  &ComInterface::clear_screen,
+          &send, &EmitterBoard::clearEvent);*/
   connect(&send, &EmitterBoard::paintLine,
           this,  &ComInterface::add_to_queue);
 
@@ -54,8 +54,9 @@ void ComInterface::send_integer(int int_to_send) {
   std::bitset<32> bits_to_send(int_to_send);
   for(int i = 0; i < 32; i++) {
 
+    while(!digitalRead(RX_IN));
+
     digitalWrite(DATA_OUT, bits_to_send[i]);
-    delay(10);
     digitalWrite(TX_OUT, LOW);
 
     while(digitalRead(RX_IN));
@@ -74,7 +75,8 @@ int ComInterface::receive_integer() {
 
     bits_to_receive[i] = digitalRead(DATA_IN);
     digitalWrite(RX_OUT, LOW);
-    delay(5);
+
+    while(!digitalRead(TX_IN));
     digitalWrite(RX_OUT, HIGH);
   }
 
@@ -88,10 +90,15 @@ void ComInterface::send_line() {
   if(current_element->start.rx() != 0
   && (current_element->start.rx() != current_element->next->start.ry()
   || current_element->start.ry() != current_element->next->start.ry())) {
+
+    digitalWrite(CONNECT_OUT, LOW);
+
     send_integer(current_element->start.rx());
     send_integer(current_element->start.ry());
     send_integer(current_element->end.rx());
     send_integer(current_element->end.ry());
+
+    digitalWrite(CONNECT_IN, HIGH);
   }
 
   current_element = current_element->next;
@@ -110,7 +117,15 @@ void ComInterface::receive_line() {
   y = receive_integer();
   QPoint end(x, y);
 
-  receive.lineReceived(start, end);
+  if(start.rx() == start.ry()
+    && start.ry() == end.rx()
+    && end.rx()   == end.ry()
+    && end.ry()   == 0) {
+
+    emit clear_screen();
+  } else {
+    receive.lineReceived(start, end);
+  }
 }
 
 void ComInterface::sendHandler(void *thread_args) {
@@ -121,6 +136,7 @@ void ComInterface::sendHandler(void *thread_args) {
       delay(1);
     }
 
+
     send_line();
   }
 }
@@ -128,6 +144,8 @@ void ComInterface::sendHandler(void *thread_args) {
 void ComInterface::receiveHandler(void *thread_args) {
 
   while(1) {
+
+    while(digitalRead(CONNECT_IN));
 
     receive_line();
   }
