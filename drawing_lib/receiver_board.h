@@ -11,7 +11,7 @@
 #include <QPen>
 #include <QImage>
 #include <QPainter>
-#include <wiringPi.h>
+//#include <wiringPi.h>
 
 class ReceiverBoard : public QWidget {
   Q_OBJECT

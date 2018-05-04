@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 #include <pthread.h>
-#include <wiringPi.h>
+#include <mutex>
 #include <QObject>
 #include "emitter_board.h"
 #include "receiver_board.h"
@@ -22,6 +22,7 @@ public:
 private:
   pthread_t send_thread;
   pthread_t receive_thread;
+  std::mutex send_queue_mutex;
   queue *send_queue;
   queue *current_element;
   EmitterBoard send;
@@ -36,7 +37,7 @@ private:
   void receiveHandler(void *);
 
 protected slots:
-  void clear_screen();
+  //void clear_screen();
   void add_to_queue(QPoint, QPoint);
 };
 

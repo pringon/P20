@@ -25,7 +25,7 @@ void ReceiverBoard::lineReceived(QPoint start_point, QPoint end_point) {
 }
 
 void ReceiverBoard::closeEvent(QCloseEvent *event) {
-  digitalWrite(7, HIGH);
+  //digitalWrite(7, HIGH);
   QApplication::quit();
 }
 

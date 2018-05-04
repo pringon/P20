@@ -2,7 +2,7 @@
 
 ComInterface::ComInterface(QWidget *parent) {
 
-  wiringPiSetup();
+  /*wiringPiSetup();
   pinMode(0, INPUT);
   pinMode(1, INPUT);
   pinMode(4, INPUT);
@@ -21,7 +21,7 @@ ComInterface::ComInterface(QWidget *parent) {
   pullUpDnControl(7, PUD_UP);
   digitalWrite(TX_OUT, HIGH);
   digitalWrite(RX_OUT, HIGH);
-
+*/
 
   /*connect(this,  &ComInterface::clear_screen,
           &send, &EmitterBoard::clearEvent);*/
@@ -33,7 +33,7 @@ ComInterface::ComInterface(QWidget *parent) {
   current_element = send_queue;
 
   pthread_create(&send_thread, NULL, &ComInterface::sendHandler_wrapper, this);
-  pthread_create(&receive_thread, NULL, &ComInterface::receiveHandler_wrapper, this);
+  //pthread_create(&receive_thread, NULL, &ComInterface::receiveHandler_wrapper, this);
 
   send.show();
   receive.show();
@@ -41,15 +41,17 @@ ComInterface::ComInterface(QWidget *parent) {
 
 void ComInterface::add_to_queue(QPoint start_point, QPoint end_point) {
 
+  while(!send_queue_mutex.try_lock());
   send_queue->start = start_point;
   send_queue->end   = end_point;
   send_queue->next = (queue*) malloc(sizeof(queue));
   send_queue->next->prev = send_queue;
   send_queue = send_queue->next;
   send_queue->next = NULL;
+  send_queue_mutex.unlock();
 }
 
-void ComInterface::send_integer(int int_to_send) {
+/*void ComInterface::send_integer(int int_to_send) {
 
   std::bitset<32> bits_to_send(int_to_send);
   for(int i = 0; i < 32; i++) {
@@ -63,9 +65,9 @@ void ComInterface::send_integer(int int_to_send) {
     digitalWrite(TX_OUT, HIGH);
   }
   std::cout<<" Data sent!"<<'\n';
-}
+}*/
 
-int ComInterface::receive_integer() {
+/*int ComInterface::receive_integer() {
 
   std::bitset<32> bits_to_receive;
   std::cout<<"Primesc ";
@@ -83,7 +85,7 @@ int ComInterface::receive_integer() {
   int int_to_receive = (int)(bits_to_receive.to_ulong());
   std::cout<<int_to_receive<<'\n';
   return int_to_receive;
-}
+}*/
 
 void ComInterface::send_line() {
 
@@ -91,21 +93,18 @@ void ComInterface::send_line() {
   && (current_element->start.rx() != current_element->next->start.ry()
   || current_element->start.ry() != current_element->next->start.ry())) {
 
-    digitalWrite(CONNECT_OUT, LOW);
-
-    send_integer(current_element->start.rx());
+    receive.lineReceived(current_element->start, current_element->end);
+    /*send_integer(current_element->start.rx());
     send_integer(current_element->start.ry());
     send_integer(current_element->end.rx());
-    send_integer(current_element->end.ry());
-
-    digitalWrite(CONNECT_IN, HIGH);
+    send_integer(current_element->end.ry());*/
   }
 
   current_element = current_element->next;
   free(current_element->prev);
 }
 
-void ComInterface::receive_line() {
+/*void ComInterface::receive_line() {
 
   int x, y;
 
@@ -126,22 +125,21 @@ void ComInterface::receive_line() {
   } else {
     receive.lineReceived(start, end);
   }
-}
+}*/
 
 void ComInterface::sendHandler(void *thread_args) {
 
   while(1) {
 
-    while(current_element->next == NULL) {
-      delay(1);
+    while(!send_queue_mutex.try_lock());
+    if(current_element->next != NULL) {
+      send_line();
     }
-
-
-    send_line();
+    send_queue_mutex.unlock();
   }
 }
 
-void ComInterface::receiveHandler(void *thread_args) {
+/*void ComInterface::receiveHandler(void *thread_args) {
 
   while(1) {
 
@@ -149,12 +147,12 @@ void ComInterface::receiveHandler(void *thread_args) {
 
     receive_line();
   }
-}
+}*/
 
 void *ComInterface::sendHandler_wrapper(void *object) {
   reinterpret_cast<ComInterface*>(object)->sendHandler(object);
 }
 
-void *ComInterface::receiveHandler_wrapper(void *object) {
-  reinterpret_cast<ComInterface*>(object)->receiveHandler(object);
-}
+//void *ComInterface::receiveHandler_wrapper(void *object) {
+//  reinterpret_cast<ComInterface*>(object)->receiveHandler(object);
+//}
