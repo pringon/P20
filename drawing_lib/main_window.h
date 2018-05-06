@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QApplication>
 #include <QPushButton>
+#include <QLineEdit>
 #include <QGroupBox>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -21,6 +22,7 @@ public:
   MainWindow(QWidget *parent = 0);
 
 private:
+  QLineEdit *line_width_form;
   EmitterBoard *drawing_board;
   QGroupBox *drawing_board_group;
   QGroupBox *tools_group;

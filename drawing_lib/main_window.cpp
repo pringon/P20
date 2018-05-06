@@ -33,9 +33,13 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
   QPushButton *pick_color = new QPushButton(tr("Pick a color"), this);
   connect(pick_color,    &QPushButton::released,
           drawing_board, &EmitterBoard::colorPickEvent);
+  line_width_form = new QLineEdit(tr("4"), this);
+  connect(line_width_form, &QLineEdit::editingFinished,
+          drawing_board,   &EmitterBoard::widthChangedEvent);
 
   horizontal_tools_box->addWidget(clear_board);
   horizontal_tools_box->addWidget(pick_color);
+  horizontal_tools_box->addWidget(line_width_form);
   tools_group->setLayout(horizontal_tools_box);
 
   // Set window layout

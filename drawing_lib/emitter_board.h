@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <mutex>
+#include <QString>
+#include <QLineEdit>
 #include <QWidget>
 #include <QSizePolicy>
 #include <QMouseEvent>
@@ -38,6 +40,7 @@ private:
   QPoint end_point;
   QImage *image;
   QColor current_color;
+  int line_width;
   void append_line();
   void paint_line();
   void painting_handler(void *);
@@ -49,9 +52,10 @@ protected slots:
   virtual void paintEvent(QPaintEvent *);
   virtual void clearEvent();
   virtual void colorPickEvent();
+  virtual void widthChangedEvent();
 
 signals:
-  void line_painted(QPoint, QPoint, QColor);
+  void line_painted(QPoint, QPoint, QColor, int);
   void board_cleared();
 };
 

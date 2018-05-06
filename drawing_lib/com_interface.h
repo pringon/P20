@@ -37,7 +37,7 @@ private:
   void receiveHandler(void *);
 
 protected slots:
-  virtual void add_to_queue(QPoint, QPoint, QColor);
+  virtual void add_to_queue(QPoint, QPoint, QColor, int);
   virtual void clear_screen();
 };
 

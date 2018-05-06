@@ -8,6 +8,7 @@ EmitterBoard::EmitterBoard(QWidget *parent) : QWidget(parent) {
   current_color = QColor(0, 0, 0);
   image = new QImage(this->size(), QImage::Format_RGB32);
   image->fill(QColor(255, 255, 255));
+  line_width = 4;
 
   pthread_create(&paint_thread, NULL, *EmitterBoard::painting_handler_wrapper, this);
   line_queue       = (queue*) malloc(sizeof(queue));
@@ -47,12 +48,12 @@ void EmitterBoard::paint_line() {
 
     QPainter painter(image);
     QPen pen;
-    pen.setWidth(4);
+    pen.setWidth(line_width);
     pen.setColor(current_color);
     painter.setPen(pen);
     painter.drawLine(this->start_point, this->end_point);
     painter.end();
-    emit line_painted(start_point, end_point, current_color);
+    emit line_painted(start_point, end_point, current_color, line_width);
     this->update();
   }
 
@@ -127,4 +128,20 @@ void EmitterBoard::colorPickEvent() {
   if(new_color.isValid()) {
     current_color = new_color;
   }
+}
+
+void EmitterBoard::widthChangedEvent() {
+
+  QLineEdit *sender_widget = dynamic_cast<QLineEdit*>(this->sender());
+
+  bool conversion_success;
+  int new_width = sender_widget->text().toInt(&conversion_success, 10);
+
+  if(!conversion_success || new_width < 1 || new_width > 20) {
+
+    sender_widget->setText(QString::number(line_width));
+    return;
+  }
+
+  line_width = new_width;
 }

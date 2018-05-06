@@ -24,7 +24,7 @@ private:
   QImage *image;
 
 protected:
-  void lineReceived(QPoint, QPoint, QColor);
+  void lineReceived(QPoint, QPoint, QColor, int);
   void clear_screen();
 
 protected slots:
