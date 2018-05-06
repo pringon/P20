@@ -1,3 +1,6 @@
+.gitignore
+.qmake.stash
+DrawingBoard
 moc*
 *.o
 Makefile

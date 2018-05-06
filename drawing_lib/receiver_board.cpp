@@ -12,15 +12,22 @@ ReceiverBoard::ReceiverBoard(QWidget *parent) : QWidget(parent) {
           this,  &ReceiverBoard::lineReceived);*/
 }
 
-void ReceiverBoard::lineReceived(QPoint start_point, QPoint end_point) {
+void ReceiverBoard::lineReceived(QPoint start_point, QPoint end_point, QColor used_color) {
 
   QPainter painter(image);
   QPen pen;
   pen.setWidth(4);
+  pen.setColor(used_color);
   painter.setPen(pen);
   painter.setBrush(Qt::black);
   painter.drawLine(start_point, end_point);
   painter.end();
+  this->update();
+}
+
+void ReceiverBoard::clear_screen() {
+
+  image->fill(QColor(255, 255, 255));
   this->update();
 }
 

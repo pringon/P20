@@ -53,15 +53,19 @@ OBJECTS_DIR   = ./
 SOURCES       = main.cpp \
 		drawing_lib/com_interface.cpp \
 		drawing_lib/emitter_board.cpp \
+		drawing_lib/main_window.cpp \
 		drawing_lib/receiver_board.cpp moc_com_interface.cpp \
 		moc_emitter_board.cpp \
+		moc_main_window.cpp \
 		moc_receiver_board.cpp
 OBJECTS       = main.o \
 		com_interface.o \
 		emitter_board.o \
+		main_window.o \
 		receiver_board.o \
 		moc_com_interface.o \
 		moc_emitter_board.o \
+		moc_main_window.o \
 		moc_receiver_board.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/unix.conf \
@@ -142,10 +146,12 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
 		DrawingBoard.pro drawing_lib/com_interface.h \
 		drawing_lib/emitter_board.h \
+		drawing_lib/main_window.h \
 		drawing_lib/queue.h \
 		drawing_lib/receiver_board.h main.cpp \
 		drawing_lib/com_interface.cpp \
 		drawing_lib/emitter_board.cpp \
+		drawing_lib/main_window.cpp \
 		drawing_lib/receiver_board.cpp
 QMAKE_TARGET  = DrawingBoard
 DESTDIR       = 
@@ -336,8 +342,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents drawing_lib/com_interface.h drawing_lib/emitter_board.h drawing_lib/queue.h drawing_lib/receiver_board.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp drawing_lib/com_interface.cpp drawing_lib/emitter_board.cpp drawing_lib/receiver_board.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents drawing_lib/com_interface.h drawing_lib/emitter_board.h drawing_lib/main_window.h drawing_lib/queue.h drawing_lib/receiver_board.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp drawing_lib/com_interface.cpp drawing_lib/emitter_board.cpp drawing_lib/main_window.cpp drawing_lib/receiver_board.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -369,21 +375,30 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 	g++ -m64 -pipe -O2 -std=gnu++11 -Wall -W -dM -E -o moc_predefs.h /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_com_interface.cpp moc_emitter_board.cpp moc_receiver_board.cpp
+compiler_moc_header_make_all: moc_com_interface.cpp moc_emitter_board.cpp moc_main_window.cpp moc_receiver_board.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_com_interface.cpp moc_emitter_board.cpp moc_receiver_board.cpp
-moc_com_interface.cpp: drawing_lib/emitter_board.h \
-		drawing_lib/receiver_board.h \
+	-$(DEL_FILE) moc_com_interface.cpp moc_emitter_board.cpp moc_main_window.cpp moc_receiver_board.cpp
+moc_com_interface.cpp: drawing_lib/main_window.h \
+		drawing_lib/emitter_board.h \
 		drawing_lib/queue.h \
+		drawing_lib/receiver_board.h \
 		drawing_lib/com_interface.h \
 		moc_predefs.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/pringon/lastAttempt/DrawingBoard -I/home/pringon/lastAttempt/DrawingBoard -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include drawing_lib/com_interface.h -o moc_com_interface.cpp
 
-moc_emitter_board.cpp: drawing_lib/emitter_board.h \
+moc_emitter_board.cpp: drawing_lib/queue.h \
+		drawing_lib/emitter_board.h \
 		moc_predefs.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/pringon/lastAttempt/DrawingBoard -I/home/pringon/lastAttempt/DrawingBoard -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include drawing_lib/emitter_board.h -o moc_emitter_board.cpp
+
+moc_main_window.cpp: drawing_lib/emitter_board.h \
+		drawing_lib/queue.h \
+		drawing_lib/main_window.h \
+		moc_predefs.h \
+		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) --include ./moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/pringon/lastAttempt/DrawingBoard -I/home/pringon/lastAttempt/DrawingBoard -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include drawing_lib/main_window.h -o moc_main_window.cpp
 
 moc_receiver_board.cpp: drawing_lib/receiver_board.h \
 		moc_predefs.h \
@@ -405,19 +420,27 @@ compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean
 ####### Compile
 
 main.o: main.cpp drawing_lib/com_interface.h \
+		drawing_lib/main_window.h \
 		drawing_lib/emitter_board.h \
-		drawing_lib/receiver_board.h \
-		drawing_lib/queue.h
+		drawing_lib/queue.h \
+		drawing_lib/receiver_board.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 com_interface.o: drawing_lib/com_interface.cpp drawing_lib/com_interface.h \
+		drawing_lib/main_window.h \
 		drawing_lib/emitter_board.h \
-		drawing_lib/receiver_board.h \
-		drawing_lib/queue.h
+		drawing_lib/queue.h \
+		drawing_lib/receiver_board.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o com_interface.o drawing_lib/com_interface.cpp
 
-emitter_board.o: drawing_lib/emitter_board.cpp drawing_lib/emitter_board.h
+emitter_board.o: drawing_lib/emitter_board.cpp drawing_lib/emitter_board.h \
+		drawing_lib/queue.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o emitter_board.o drawing_lib/emitter_board.cpp
+
+main_window.o: drawing_lib/main_window.cpp drawing_lib/main_window.h \
+		drawing_lib/emitter_board.h \
+		drawing_lib/queue.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main_window.o drawing_lib/main_window.cpp
 
 receiver_board.o: drawing_lib/receiver_board.cpp drawing_lib/receiver_board.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o receiver_board.o drawing_lib/receiver_board.cpp
@@ -427,6 +450,9 @@ moc_com_interface.o: moc_com_interface.cpp
 
 moc_emitter_board.o: moc_emitter_board.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_emitter_board.o moc_emitter_board.cpp
+
+moc_main_window.o: moc_main_window.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_main_window.o moc_main_window.cpp
 
 moc_receiver_board.o: moc_receiver_board.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_receiver_board.o moc_receiver_board.cpp

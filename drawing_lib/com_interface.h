@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include <bitset>
 #include <utility>
-#include <vector>
 #include <pthread.h>
 #include <mutex>
 #include <QObject>
-#include "emitter_board.h"
+#include "main_window.h"
+#include "main_window.h"
 #include "receiver_board.h"
 #include "queue.h"
 
@@ -16,8 +16,8 @@ class ComInterface : public QObject{
   Q_OBJECT
 public:
   ComInterface(QWidget *parent = 0);
-  static void* sendHandler_wrapper(void *);
-  static void* receiveHandler_wrapper(void *);
+  static void *sendHandler_wrapper(void *);
+  static void *receiveHandler_wrapper(void *);
 
 private:
   pthread_t send_thread;
@@ -25,7 +25,7 @@ private:
   std::mutex send_queue_mutex;
   queue *send_queue;
   queue *current_element;
-  EmitterBoard send;
+  MainWindow send;
   ReceiverBoard receive;
   enum PINS { RX_IN, TX_IN, RX_OUT, TX_OUT, DATA_IN, DATA_OUT, CONNECT_IN, CONNECT_OUT };
 
@@ -37,8 +37,8 @@ private:
   void receiveHandler(void *);
 
 protected slots:
-  //void clear_screen();
-  void add_to_queue(QPoint, QPoint);
+  virtual void add_to_queue(QPoint, QPoint, QColor);
+  virtual void clear_screen();
 };
 
 #endif

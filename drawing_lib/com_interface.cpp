@@ -1,6 +1,7 @@
 #include "com_interface.h"
 
 ComInterface::ComInterface(QWidget *parent) {
+  std::cout<<"Ajunge aici"<<std::endl;
 
   /*wiringPiSetup();
   pinMode(0, INPUT);
@@ -25,25 +26,29 @@ ComInterface::ComInterface(QWidget *parent) {
 
   /*connect(this,  &ComInterface::clear_screen,
           &send, &EmitterBoard::clearEvent);*/
-  connect(&send, &EmitterBoard::paintLine,
+  connect(send.drawing_board, &EmitterBoard::line_painted,
           this,  &ComInterface::add_to_queue);
-
+  connect(send.drawing_board, &EmitterBoard::board_cleared,
+          this, &ComInterface::clear_screen);
+  std::cout<<'2'<<std::endl;
   send_queue = (queue*) malloc(sizeof(queue));
   send_queue->next = NULL;
   current_element = send_queue;
-
+  std::cout<<'3'<<std::endl;
   pthread_create(&send_thread, NULL, &ComInterface::sendHandler_wrapper, this);
   //pthread_create(&receive_thread, NULL, &ComInterface::receiveHandler_wrapper, this);
-
+  std::cout<<'4'<<std::endl;
   send.show();
   receive.show();
+  std::cout<<'5'<<std::endl;
 }
 
-void ComInterface::add_to_queue(QPoint start_point, QPoint end_point) {
+void ComInterface::add_to_queue(QPoint start_point, QPoint end_point, QColor used_color) {
 
   while(!send_queue_mutex.try_lock());
   send_queue->start = start_point;
   send_queue->end   = end_point;
+  send_queue->color = used_color;
   send_queue->next = (queue*) malloc(sizeof(queue));
   send_queue->next->prev = send_queue;
   send_queue = send_queue->next;
@@ -93,7 +98,7 @@ void ComInterface::send_line() {
   && (current_element->start.rx() != current_element->next->start.ry()
   || current_element->start.ry() != current_element->next->start.ry())) {
 
-    receive.lineReceived(current_element->start, current_element->end);
+    receive.lineReceived(current_element->start, current_element->end, current_element->color);
     /*send_integer(current_element->start.rx());
     send_integer(current_element->start.ry());
     send_integer(current_element->end.rx());
@@ -102,6 +107,11 @@ void ComInterface::send_line() {
 
   current_element = current_element->next;
   free(current_element->prev);
+}
+
+void ComInterface::clear_screen() {
+
+  receive.clear_screen();
 }
 
 /*void ComInterface::receive_line() {
