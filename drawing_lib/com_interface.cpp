@@ -92,6 +92,7 @@ void ComInterface::send_line() {
   && (current_element->start.rx() != current_element->next->start.ry()
   || current_element->start.ry() != current_element->next->start.ry())) {
 
+    digitalWrite(CONNECT_OUT, LOW);
     send_integer(current_element->start.rx());
     send_integer(current_element->start.ry());
     send_integer(current_element->end.rx());
@@ -106,6 +107,7 @@ void ComInterface::send_line() {
         send_integer(current_element->color.blue());
         send_integer(current_element->width);
       }
+    digitalWrite(CONNECT_OUT, HIGH);
   }
 
   current_element = current_element->next;
@@ -144,11 +146,10 @@ void ComInterface::sendHandler(void *thread_args) {
 
   while(1) {
 
-    while(!send_queue_mutex.try_lock());
-    if(current_element->next != NULL) {
-      send_line();
+    while(current_element->next == NULL) {
+      delay(1);
     }
-    send_queue_mutex.unlock();
+    send_line();
   }
 }
 
