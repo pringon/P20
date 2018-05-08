@@ -118,7 +118,9 @@ void EmitterBoard::paintEvent(QPaintEvent *event) {
 void EmitterBoard::clearEvent() {
 
     image->fill(QColor(255, 255, 255));
-    emit board_cleared();
+
+    emit line_painted(QPoint(0, 0), QPoint(0, 0));
+
     this->update();
 }
 

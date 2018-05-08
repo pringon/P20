@@ -32,7 +32,7 @@ void ReceiverBoard::clear_screen() {
 }
 
 void ReceiverBoard::closeEvent(QCloseEvent *event) {
-  //digitalWrite(7, HIGH);
+  digitalWrite(7, LOW);
   QApplication::quit();
 }
 

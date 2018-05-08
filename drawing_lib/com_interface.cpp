@@ -3,7 +3,7 @@
 ComInterface::ComInterface(QWidget *parent) {
   std::cout<<"Ajunge aici"<<std::endl;
 
-  /*wiringPiSetup();
+  wiringPiSetup();
   pinMode(0, INPUT);
   pinMode(1, INPUT);
   pinMode(4, INPUT);
@@ -19,28 +19,23 @@ ComInterface::ComInterface(QWidget *parent) {
   pullUpDnControl(2, PUD_UP);
   pullUpDnControl(3, PUD_UP);
   pullUpDnControl(5, PUD_UP);
-  pullUpDnControl(7, PUD_UP);
   digitalWrite(TX_OUT, HIGH);
   digitalWrite(RX_OUT, HIGH);
-*/
+  digitalWrite(CONNECT_OUT, HIGH);
+  while(!digitalRead(CONNECT_IN));
 
-  /*connect(this,  &ComInterface::clear_screen,
-          &send, &EmitterBoard::clearEvent);*/
   connect(send.drawing_board, &EmitterBoard::line_painted,
           this,  &ComInterface::add_to_queue);
-  connect(send.drawing_board, &EmitterBoard::board_cleared,
-          this, &ComInterface::clear_screen);
-  std::cout<<'2'<<std::endl;
+
   send_queue = (queue*) malloc(sizeof(queue));
   send_queue->next = NULL;
   current_element = send_queue;
-  std::cout<<'3'<<std::endl;
+
   pthread_create(&send_thread, NULL, &ComInterface::sendHandler_wrapper, this);
-  //pthread_create(&receive_thread, NULL, &ComInterface::receiveHandler_wrapper, this);
-  std::cout<<'4'<<std::endl;
+  pthread_create(&receive_thread, NULL, &ComInterface::receiveHandler_wrapper, this);
+
   send.show();
   receive.show();
-  std::cout<<'5'<<std::endl;
 }
 
 void ComInterface::add_to_queue(QPoint start_point, QPoint end_point, QColor used_color, int line_width) {
@@ -57,7 +52,7 @@ void ComInterface::add_to_queue(QPoint start_point, QPoint end_point, QColor use
   send_queue_mutex.unlock();
 }
 
-/*void ComInterface::send_integer(int int_to_send) {
+void ComInterface::send_integer(int int_to_send) {
 
   std::bitset<32> bits_to_send(int_to_send);
   for(int i = 0; i < 32; i++) {
@@ -70,13 +65,11 @@ void ComInterface::add_to_queue(QPoint start_point, QPoint end_point, QColor use
     while(digitalRead(RX_IN));
     digitalWrite(TX_OUT, HIGH);
   }
-  std::cout<<" Data sent!"<<'\n';
-}*/
+}
 
-/*int ComInterface::receive_integer() {
+int ComInterface::receive_integer() {
 
   std::bitset<32> bits_to_receive;
-  std::cout<<"Primesc ";
   for(int i = 0; i < 32; i++) {
 
     while(digitalRead(TX_IN));
@@ -91,7 +84,7 @@ void ComInterface::add_to_queue(QPoint start_point, QPoint end_point, QColor use
   int int_to_receive = (int)(bits_to_receive.to_ulong());
   std::cout<<int_to_receive<<'\n';
   return int_to_receive;
-}*/
+}
 
 void ComInterface::send_line() {
 
@@ -99,23 +92,27 @@ void ComInterface::send_line() {
   && (current_element->start.rx() != current_element->next->start.ry()
   || current_element->start.ry() != current_element->next->start.ry())) {
 
-    receive.lineReceived(current_element->start, current_element->end, current_element->color, current_element->width);
-    /*send_integer(current_element->start.rx());
+    send_integer(current_element->start.rx());
     send_integer(current_element->start.ry());
     send_integer(current_element->end.rx());
-    send_integer(current_element->end.ry());*/
+    send_integer(current_element->end.ry());
+
+    if(!(current_element->start.rx()   == current_element->start.ry()
+      && current_element->start.ry() == current_element->end.rx()
+      && current_element->end.rx()   == current_element->end.ry()
+      && current_element->end.ry()   == 0)) {
+        send_integer(current_element->color.red());
+        send_integer(current_element->color.green());
+        send_integer(current_element->color.blue());
+        send_integer(current_element->width);
+      }
   }
 
   current_element = current_element->next;
   free(current_element->prev);
 }
 
-void ComInterface::clear_screen() {
-
-  receive.clear_screen();
-}
-
-/*void ComInterface::receive_line() {
+void ComInterface::receive_line() {
 
   int x, y;
 
@@ -127,16 +124,21 @@ void ComInterface::clear_screen() {
   y = receive_integer();
   QPoint end(x, y);
 
-  if(start.rx() == start.ry()
+  if(start.rx()   == start.ry()
     && start.ry() == end.rx()
     && end.rx()   == end.ry()
     && end.ry()   == 0) {
 
-    emit clear_screen();
+    receive.clear_screen();
   } else {
-    receive.lineReceived(start, end);
+    int red   = receive_integer(),
+        green = receive_integer(),
+        blue  = receive_integer(),
+        width = receive_integer();
+
+    receive.lineReceived(start, end, QColor(red, green, blue), width);
   }
-}*/
+}
 
 void ComInterface::sendHandler(void *thread_args) {
 
@@ -150,7 +152,7 @@ void ComInterface::sendHandler(void *thread_args) {
   }
 }
 
-/*void ComInterface::receiveHandler(void *thread_args) {
+void ComInterface::receiveHandler(void *thread_args) {
 
   while(1) {
 
@@ -158,12 +160,12 @@ void ComInterface::sendHandler(void *thread_args) {
 
     receive_line();
   }
-}*/
+}
 
 void *ComInterface::sendHandler_wrapper(void *object) {
   reinterpret_cast<ComInterface*>(object)->sendHandler(object);
 }
 
-//void *ComInterface::receiveHandler_wrapper(void *object) {
-//  reinterpret_cast<ComInterface*>(object)->receiveHandler(object);
-//}
+void *ComInterface::receiveHandler_wrapper(void *object) {
+  reinterpret_cast<ComInterface*>(object)->receiveHandler(object);
+}

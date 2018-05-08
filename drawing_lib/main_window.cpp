@@ -49,6 +49,6 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-  //digitalWrite(7, HIGH);
+  digitalWrite(7, LOW);
   QApplication::quit();
 }

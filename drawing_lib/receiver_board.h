@@ -2,6 +2,7 @@
 #define RECEIVER_BOARD_H
 
 #include <iostream>
+#include <wiringPi.h>
 #include <QApplication>
 #include <QWidget>
 #include <QCloseEvent>

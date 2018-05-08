@@ -55,7 +55,7 @@ protected slots:
   virtual void widthChangedEvent();
 
 signals:
-  void line_painted(QPoint, QPoint, QColor, int);
+  void line_painted(QPoint, QPoint, QColor = QColor(0, 0, 0), int = 4);
   void board_cleared();
 };
 

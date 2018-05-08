@@ -5,8 +5,10 @@
 #include <bitset>
 #include <utility>
 #include <pthread.h>
+#include <wiringPi.h>
 #include <mutex>
 #include <QObject>
+#include <QColor>
 #include "main_window.h"
 #include "main_window.h"
 #include "receiver_board.h"
@@ -38,7 +40,6 @@ private:
 
 protected slots:
   virtual void add_to_queue(QPoint, QPoint, QColor, int);
-  virtual void clear_screen();
 };
 
 #endif
