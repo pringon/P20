@@ -24,6 +24,8 @@ void EmitterBoard::append_line() {
 
   line_queue->start = start_point;
   line_queue->end   = end_point;
+  line_queue->color = current_color;
+  line_queue->width = line_width;
   line_queue->next = (queue*) malloc(sizeof(queue));
   line_queue->next->prev = line_queue;
   line_queue = line_queue->next;
@@ -51,9 +53,9 @@ void EmitterBoard::paint_line() {
     pen.setWidth(line_width);
     pen.setColor(current_color);
     painter.setPen(pen);
-    painter.drawLine(this->start_point, this->end_point);
+    painter.drawLine(current_line->start, current_line->end);
     painter.end();
-    emit line_painted(start_point, end_point, current_color, line_width);
+    emit line_painted(current_line->start, current_line->end, current_line->color, current_line->width);
     this->update();
   }
 

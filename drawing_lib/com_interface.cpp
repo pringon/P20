@@ -45,7 +45,6 @@ ComInterface::ComInterface(QWidget *parent) {
 
 void ComInterface::add_to_queue(QPoint start_point, QPoint end_point, QColor used_color, int line_width) {
 
-  while(!send_queue_mutex.try_lock());
   send_queue->start = start_point;
   send_queue->end   = end_point;
   send_queue->color = used_color;
@@ -54,7 +53,6 @@ void ComInterface::add_to_queue(QPoint start_point, QPoint end_point, QColor use
   send_queue->next->prev = send_queue;
   send_queue = send_queue->next;
   send_queue->next = NULL;
-  send_queue_mutex.unlock();
 }
 
 /*void ComInterface::send_integer(int int_to_send) {
@@ -142,11 +140,9 @@ void ComInterface::sendHandler(void *thread_args) {
 
   while(1) {
 
-    while(!send_queue_mutex.try_lock());
     if(current_element->next != NULL) {
       send_line();
     }
-    send_queue_mutex.unlock();
   }
 }
 
