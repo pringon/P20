@@ -88,27 +88,22 @@ int ComInterface::receive_integer() {
 
 void ComInterface::send_line() {
 
-  if(current_element->start.rx() != 0
-  && (current_element->start.rx() != current_element->next->start.ry()
-  || current_element->start.ry() != current_element->next->start.ry())) {
+  digitalWrite(CONNECT_OUT, LOW);
+  send_integer(current_element->start.rx());
+  send_integer(current_element->start.ry());
+  send_integer(current_element->end.rx());
+  send_integer(current_element->end.ry());
 
-    digitalWrite(CONNECT_OUT, LOW);
-    send_integer(current_element->start.rx());
-    send_integer(current_element->start.ry());
-    send_integer(current_element->end.rx());
-    send_integer(current_element->end.ry());
-
-    if(!(current_element->start.rx()   == current_element->start.ry()
-      && current_element->start.ry() == current_element->end.rx()
-      && current_element->end.rx()   == current_element->end.ry()
-      && current_element->end.ry()   == 0)) {
-        send_integer(current_element->color.red());
-        send_integer(current_element->color.green());
-        send_integer(current_element->color.blue());
-        send_integer(current_element->width);
-      }
-    digitalWrite(CONNECT_OUT, HIGH);
+  if(!(current_element->start.rx()   == current_element->start.ry()
+    && current_element->start.ry() == current_element->end.rx()
+    && current_element->end.rx()   == current_element->end.ry()
+    && current_element->end.ry()   == 0)) {
+      send_integer(current_element->color.red());
+      send_integer(current_element->color.green());
+      send_integer(current_element->color.blue());
+      send_integer(current_element->width);
   }
+  digitalWrite(CONNECT_OUT, HIGH);
 
   current_element = current_element->next;
   free(current_element->prev);
